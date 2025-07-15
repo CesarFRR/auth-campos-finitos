@@ -1,0 +1,30 @@
+# Archivos y carpetas de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+ENV/
+.venv/
+*.sqlite3
+instance/
+*.db
+
+# Archivos de configuración de entorno
+.env
+*.env
+
+# Archivos de logs
+*.log
+
+# Archivos de Vercel
+.vercel/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración de editor
+.vscode/
+.idea/

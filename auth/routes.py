@@ -64,7 +64,7 @@ def login():
             session['user_id'] = user['id']
             session['email'] = user['email']
             username = user['email'].split('@')[0]
-            flash('Bienvenido, ' + username)
+            # flash('Bienvenido, ' + username)
             return redirect(url_for('auth.dashboard'))
         else:
             flash('Correo o contraseña incorrectos')
