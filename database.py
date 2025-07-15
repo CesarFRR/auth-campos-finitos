@@ -18,3 +18,11 @@ def connect_to_database(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
+
+    # Crear las tablas automáticamente al inicializar la app
+    try:
+        with app.app_context():
+            db.create_all()
+            print("¡Tablas creadas correctamente!")
+    except Exception as e:
+        print("Error al crear las tablas:", e)
