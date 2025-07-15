@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 import os
 
 # Factory de la aplicación
@@ -23,7 +23,8 @@ def create_app():
     # Ruta raíz
     @app.route('/')
     def index():
-        return '¡Bienvenido! La app está funcionando.'
+        return redirect(url_for('auth.login'))
+
 
     return app
 
