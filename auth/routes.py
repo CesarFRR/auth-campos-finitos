@@ -1,38 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app, g
-import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
-import os
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from models.user import User
+from app import db
 
 # Blueprint de autenticación
 auth_bp = Blueprint('auth', __name__)
 
-# --- Utilidades de base de datos ---
-def get_db():
-    if 'db' not in g:
-        g.db = sqlite3.connect(current_app.config['DATABASE'])
-        g.db.row_factory = sqlite3.Row
-    return g.db
-
-@auth_bp.teardown_app_request
-def close_db(exception=None):
-    db = g.pop('db', None)
-    if db is not None:
-        db.close()
-
-def init_db():
-    db = get_db()
-    db.execute('''CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
-    )''')
-    db.commit()
-
 # --- Rutas ---
-@auth_bp.before_app_request
-def initialize_database():
-    init_db()
-
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -41,15 +14,17 @@ def register():
         if not email or not password:
             flash('Correo y contraseña requeridos')
             return redirect(url_for('auth.register'))
-        hashed = generate_password_hash(password)
+        # Aquí deberías calcular el verificador público y (por ahora, lo dejamos como el email para pruebas)
+        y = email  # Sustituye esto por el cálculo real de y cuando implementes el reto-respuesta
         try:
-            db = get_db()
-            db.execute('INSERT INTO users (email, password) VALUES (?, ?)', (email, hashed))
-            db.commit()
+            nuevo_usuario = User(email=email, y=y)
+            db.session.add(nuevo_usuario)
+            db.session.commit()
             flash('Registro exitoso, ahora puedes iniciar sesión')
             return redirect(url_for('auth.login'))
-        except sqlite3.IntegrityError:
-            flash('El correo ya está registrado')
+        except Exception as e:
+            db.session.rollback()
+            flash('El correo ya está registrado o hubo un error')
             return redirect(url_for('auth.register'))
     return render_template('register.html')
 
@@ -58,13 +33,12 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        db = get_db()
-        user = db.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
-            session['email'] = user['email']
-            username = user['email'].split('@')[0]
-            # flash('Bienvenido, ' + username)
+        user = User.query.filter_by(email=email).first()
+        # Aquí deberías implementar el reto-respuesta, por ahora solo verifica si existe el usuario
+        if user:
+            session['user_id'] = user.id
+            session['email'] = user.email
+            username = user.email.split('@')[0]
             return redirect(url_for('auth.dashboard'))
         else:
             flash('Correo o contraseña incorrectos')
