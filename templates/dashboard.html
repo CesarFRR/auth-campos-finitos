@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Appbar de navegación solo en dashboard -->
+<nav class="appbar" style="padding: 1em 0;">
+    <div class="appbar-content" style="display: flex; align-items: center; justify-content: space-between; max-width: auto; margin: 0 auto; padding: 0 1.5em;">
+        <span class="appbar-title" style="font-size: 1.5em; font-weight: bold; letter-spacing: 1px; padding-right: 2em;">Cripto Login</span>
+        <div class="appbar-nav" style="display: flex; gap: 1.5em; align-items: center;">
+            <a href="#seccion1" style="padding: 0.5em 1em;">Inicio</a>
+            <a href="#seccion2" style="padding: 0.5em 1em;">Preguntas Frecuentes</a>
+            <a href="#seccion3" style="padding: 0.5em 1em;">Fundamentos</a>
+            <a href="#seccion4" style="padding: 0.5em 1em;">Ejemplo</a>
+            <a href="#seccion5" style="padding: 0.5em 1em;">Aplicaciones</a>
+            <form action="{{ url_for('auth.logout') }}" method="get" style="display:inline; margin-left:1.5em;">
+                <button type="submit" style="padding: 0.5em 1.2em;">Cerrar sesión</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<main class="container">
+    <h2>Bienvenido, {{ email.split('@')[0] }}</h2>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Sección 1 -->
+    <section id="seccion1" class="form-section">
+        <h1>Bienvenido al Sistema de Seguridad</h1>
+        <details>
+            <summary>Ver más</summary>
+            <p>Aquí podrás encontrar información y aplicaciones sobre criptografía, autenticación y seguridad.</p>
+        </details>
+    </section>
+
+    <!-- Sección 2 -->
+    <section id="seccion2" class="form-section">
+        <h2>Preguntas Frecuentes</h2>
+        <details>
+            <summary>Ver más</summary>
+            <p>Aquí podrás agregar preguntas frecuentes sobre el sistema o la seguridad.</p>
+        </details>
+    </section>
+
+    <!-- Sección 3 -->
+    <section id="seccion3" class="form-section">
+        <h2>Fundamentos</h2>
+        <details>
+            <summary>Ver más</summary>
+            <p>Explica aquí los fundamentos matemáticos o teóricos de la seguridad que implementarán.</p>
+        </details>
+    </section>
+
+    <!-- Sección 4 -->
+    <section id="seccion4" class="form-section">
+        <h2>Ejemplo</h2>
+        <details>
+            <summary>Ver más</summary>
+            <p>Aquí puedes poner un ejemplo práctico de alguna técnica de seguridad o cifrado.</p>
+        </details>
+    </section>
+
+    <!-- Sección 5 -->
+    <section id="seccion5" class="form-section">
+        <h2>Aplicaciones</h2>
+        <details>
+            <summary>Ver más</summary>
+            <p>En esta sección podrás agregar tus propias aplicaciones de seguridad, autenticación, cifrado, etc.</p>
+        </details>
+    </section>
+</main>
+{% endblock %} 

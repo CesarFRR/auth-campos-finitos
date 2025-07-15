@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro{% endblock %}
+
+{% block content %}
+<h2>Registro</h2>
+<form method="post">
+  Correo: <input name="email" type="email" required><br>
+  Contraseña: <input name="password" type="password" required><br>
+  <input type="submit" value="Registrarse">
+</form>
+<a href="{{ url_for('auth.login') }}">¿Ya tienes cuenta? Inicia sesión</a>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>
+  {% endif %}
+{% endwith %}
+{% endblock %} 
