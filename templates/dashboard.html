@@ -13,6 +13,7 @@
             <a href="#seccion3" style="padding: 0.5em 1em;">Fundamentos</a>
             <a href="#seccion4" style="padding: 0.5em 1em;">Ejemplo</a>
             <a href="#seccion5" style="padding: 0.5em 1em;">Aplicaciones</a>
+            <a href="{{ url_for('auth.p5') }}" style="padding: 0.5em 1em; font-weight: bold; color: #1976d2;">Sección interactiva</a>
             <form action="{{ url_for('auth.logout') }}" method="get" style="display:inline; margin-left:1.5em;">
                 <button type="submit" style="padding: 0.5em 1.2em;">Cerrar sesión</button>
             </form>
@@ -33,7 +34,10 @@
         <h1>Bienvenido al Sistema de Seguridad</h1>
         <details>
             <summary>Ver más</summary>
-            <p>Aquí podrás encontrar información y aplicaciones sobre criptografía, autenticación y seguridad.</p>
+            <p>
+                Este sistema utiliza retos matemáticos basados en <b>campos finitos</b> para autenticar usuarios de manera segura y educativa.<br>
+                Aquí podrás aprender y experimentar con conceptos fundamentales de la criptografía moderna, como la aritmética modular y el uso de generadores en grupos finitos.
+            </p>
         </details>
     </section>
 
@@ -41,8 +45,31 @@
     <section id="seccion2" class="form-section">
         <h2>Preguntas Frecuentes</h2>
         <details>
-            <summary>Ver más</summary>
-            <p>Aquí podrás agregar preguntas frecuentes sobre el sistema o la seguridad.</p>
+            <summary>¿Por qué se usan campos finitos en criptografía?</summary>
+            <p>
+                Los <b>campos finitos</b> permiten realizar operaciones matemáticas seguras y eficientes.<br>
+                Son la base de algoritmos como <b>Diffie-Hellman</b>, <b>ElGamal</b>, <b>DSA</b> y <b>ECC</b>, donde la dificultad de ciertos problemas matemáticos (como el logaritmo discreto) garantiza la seguridad.
+            </p>
+        </details>
+        <details>
+            <summary>¿Qué es un generador?</summary>
+            <p>
+                Un <b>generador</b> \( g \) en el grupo multiplicativo de un campo finito \( \mathbb{Z}_p^* \) es un número tal que sus potencias generan todos los elementos del grupo:<br>
+                \( \{ g^1 \bmod p,\, g^2 \bmod p,\, \ldots,\, g^{p-1} \bmod p \} = \mathbb{Z}_p^* \)
+            </p>
+        </details>
+        <details>
+            <summary>¿Mi PIN está seguro?</summary>
+            <p>
+                Sí, tu PIN nunca se almacena directamente. Se guarda como un <b>hash seguro</b> y se utiliza como exponente en el reto:<br>
+                \( g^{PIN} \bmod p \)
+            </p>
+        </details>
+        <details>
+            <summary>¿Qué pasa si fallo el reto?</summary>
+            <p>
+                Puedes intentarlo de nuevo. El sistema está diseñado para que aprendas y practiques, además de proteger el acceso.
+            </p>
         </details>
     </section>
 
@@ -50,8 +77,28 @@
     <section id="seccion3" class="form-section">
         <h2>Fundamentos</h2>
         <details>
-            <summary>Ver más</summary>
-            <p>Explica aquí los fundamentos matemáticos o teóricos de la seguridad que implementarán.</p>
+            <summary>Campos finitos</summary>
+            <p>
+                Un <b>campo finito</b> es un conjunto de números con un número finito de elementos donde se pueden hacer sumas, restas, multiplicaciones y divisiones (excepto por cero), y siempre se obtiene otro elemento del mismo conjunto.<br>
+                En criptografía se usa principalmente \( \mathbb{Z}_p \), donde \( p \) es un número primo.<br>
+                <br>
+                <b>Ejemplo:</b> En \( \mathbb{Z}_{13} \), los elementos son \( \{0, 1, 2, \ldots, 12\} \) y todas las operaciones se hacen módulo 13.
+            </p>
+        </details>
+        <details>
+            <summary>Generadores</summary>
+            <p>
+                En el grupo multiplicativo \( \mathbb{Z}_p^* \), un generador \( g \) cumple que:<br>
+                \( \{ g^1 \bmod p,\, g^2 \bmod p,\, \ldots,\, g^{p-1} \bmod p \} \) recorre todos los números del 1 al \( p-1 \) sin repetir.<br>
+                <br>
+                <b>Ejemplo:</b> Si \( p = 7 \) y \( g = 3 \):<br>
+                \( 3^1 \bmod 7 = 3 \)<br>
+                \( 3^2 \bmod 7 = 2 \)<br>
+                \( 3^3 \bmod 7 = 6 \)<br>
+                \( 3^4 \bmod 7 = 4 \)<br>
+                \( 3^5 \bmod 7 = 5 \)<br>
+                \( 3^6 \bmod 7 = 1 \)
+            </p>
         </details>
     </section>
 
@@ -59,8 +106,14 @@
     <section id="seccion4" class="form-section">
         <h2>Ejemplo</h2>
         <details>
-            <summary>Ver más</summary>
-            <p>Aquí puedes poner un ejemplo práctico de alguna técnica de seguridad o cifrado.</p>
+            <summary>Ejemplo de reto</summary>
+            <p>
+                Supón que \( p = 13 \) y \( g = 2 \). Si tu PIN es 5, el reto es calcular:<br>
+                \( 2^5 \bmod 13 \)<br>
+                \( 2^5 = 32 \)<br>
+                \( 32 \bmod 13 = 6 \)<br>
+                <b>Respuesta correcta:</b> 6
+            </p>
         </details>
     </section>
 
@@ -68,9 +121,29 @@
     <section id="seccion5" class="form-section">
         <h2>Aplicaciones</h2>
         <details>
-            <summary>Ver más</summary>
-            <p>En esta sección podrás agregar tus propias aplicaciones de seguridad, autenticación, cifrado, etc.</p>
+            <summary>Campos finitos en criptografía</summary>
+            <p>
+                Los campos finitos y generadores son la base de muchos algoritmos criptográficos modernos:<br>
+                <ul>
+                    <li><b>Diffie-Hellman:</b> Intercambio seguro de claves usando \( g^a \bmod p \) y \( g^b \bmod p \).</li>
+                    <li><b>ElGamal:</b> Cifrado asimétrico basado en la dificultad del logaritmo discreto.</li>
+                    <li><b>DSA:</b> Algoritmo de firma digital que usa operaciones en \( \mathbb{Z}_p \).</li>
+                    <li><b>ECC (Criptografía de Curvas Elípticas):</b> Seguridad avanzada con claves más cortas, usando campos finitos y curvas elípticas.</li>
+                </ul>
+            </p>
         </details>
     </section>
+
+    <!-- Sección Interactiva -->
+    <section id="seccion-interactiva" class="form-section" style="margin-top:2em;">
+        <h2>¿Quieres experimentar?</h2>
+        <p>
+            Si deseas probar los conceptos de campos finitos y generadores de manera práctica, visita la sección interactiva.<br>
+            Allí podrás resolver retos matemáticos y ver cómo funciona la autenticación basada en criptografía.
+        </p>
+        <a href="{{ url_for('auth.p5') }}" style="display: inline-block; margin-top: 1em; padding: 0.8em 2em; background-color: #1976d2; color: #fff; font-weight: bold; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 8px rgba(25,118,210,0.15); transition: background 0.2s;">
+            Ir a sección interactiva
+        </a>
+    </section>
 </main>
-{% endblock %} 
+{% endblock %}

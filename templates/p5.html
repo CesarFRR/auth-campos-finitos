@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualización Campo Finito - Cripto Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+    <style>
+        body {
+            background: #181a1b;
+            color: #f3f3f3;
+        }
+        #sketch-holder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2em;
+        }
+        /* Espaciado para los inputs y labels de p5 */
+        .p5-input, .p5-label {
+            margin-bottom: 10px !important;
+            display: block !important;
+        }
+        .p5-label {
+            margin-top: 18px !important;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h2 style="text-align:center; margin-top: 1em;">Visualización Interactiva de Campo Finito (Zp)</h2>
+        <div id="sketch-holder"></div>
+    </main>
+    <script>
+// Variables para los elementos de entrada y valores
+let inputP, inputNum1, inputNum2;
+let modulusP = 7; // Valor inicial del módulo (p)
+let val1 = 3;     // Valor inicial del primer número (a)
+let val2 = 2;     // Valor inicial del segundo número (b)
+let sumResult;    // Resultado de la suma modular (a + b) mod p
+let multResult;   // Resultado de la multiplicación modular (a * b) mod p
+let animating = false;
+let animationStart = 0;
+let animationProgress = 0; // 0 a 1
+let animationType = "sum"; // "sum" o "mult"
+let animationSpeed = 0.5; // 1.0 = normal, <1 más lento, >1 más rápido (valor inicial más lento)
+let preSumTime = 0; // Tiempo de preanimación para la suma
+
+function setup() {
+  let canvas = createCanvas(900, 600);
+  canvas.parent('sketch-holder');
+  background(220);
+
+  textSize(18);
+  textAlign(LEFT, CENTER);
+  fill(0);
+
+  let yPos = 20;
+  let xPos = 20;
+
+  createElement('h3', 'Configuración del Campo Finito (Zp)').position(xPos, yPos).addClass('p5-label');
+  yPos += 40;
+
+  createP('Módulo p (primo):').position(xPos, yPos).addClass('p5-label');
+  yPos += 40; // Añadimos más espacio entre el label y el input
+  inputP = createInput(modulusP.toString());
+  inputP.position(xPos, yPos);
+  inputP.input(updateValues);
+  inputP.addClass('p5-input');
+  yPos += 45; // Espacio extra después del input
+
+  createP('Número 1 (a):').position(xPos, yPos).addClass('p5-label');
+  yPos += 40;
+  inputNum1 = createInput(val1.toString());
+  inputNum1.position(xPos, yPos);
+  inputNum1.input(updateValues);
+  inputNum1.addClass('p5-input');
+  yPos += 45;
+
+  createP('Número 2 (b):').position(xPos, yPos).addClass('p5-label');
+  yPos += 40;
+  inputNum2 = createInput(val2.toString());
+  inputNum2.position(xPos, yPos);
+  inputNum2.input(updateValues);
+  inputNum2.addClass('p5-input');
+  yPos += 45;
+
+  let calculateButton = createButton('Calcular');
+  calculateButton.position(xPos, yPos);
+  calculateButton.mousePressed(triggerAnimation);
+
+  let speedSlider = createSlider(0.1, 2, 0.5, 0.01); // mínimo más bajo y valor inicial más lento
+  speedSlider.position(20, yPos + 70);
+  speedSlider.style('width', '200px');
+  speedSlider.input(() => {
+    animationSpeed = speedSlider.value();
+  });
+  createP('Velocidad de animación').position(20, yPos + 30).addClass('p5-label');
+
+  updateValues();
+}
+
+function triggerAnimation() {
+  animating = true;
+  animationStart = millis();
+  animationProgress = 0;
+  animationType = "sum"; // Puedes cambiar a "mult" si quieres animar la multiplicación
+  updateValues();
+  loop();
+}
+
+function updateValues() {
+  // Obtener valores de los inputs y convertirlos a enteros
+  let newP = parseInt(inputP.value());
+  let newNum1 = inputNum1.value();
+  let newNum2 = inputNum2.value();
+
+  // Validar el módulo p: debe ser un número y mayor que 1
+  if (isNaN(newP) || newP <= 1) {
+    modulusP = 2;
+    inputP.value(modulusP);
+  } else {
+    modulusP = newP;
+  }
+
+  // Validar Número 1 (a)
+  if (newNum1 === "") {
+    val1 = 0;
+    inputNum1.value(""); // No mostrar nada si está vacío
+  } else {
+    let parsedNum1 = parseInt(newNum1);
+    if (isNaN(parsedNum1) || parsedNum1 < 0 || parsedNum1 >= modulusP) {
+      val1 = 0;
+      inputNum1.value("0");
+    } else {
+      val1 = parsedNum1;
+      inputNum1.value(parsedNum1.toString());
+    }
+  }
+
+  // Validar Número 2 (b)
+  if (newNum2 === "") {
+    val2 = 0;
+    inputNum2.value(""); // No mostrar nada si está vacío
+  } else {
+    let parsedNum2 = parseInt(newNum2);
+    if (isNaN(parsedNum2) || parsedNum2 < 0 || parsedNum2 >= modulusP) {
+      val2 = 0;
+      inputNum2.value("0");
+    } else {
+      val2 = parsedNum2;
+      inputNum2.value(parsedNum2.toString());
+    }
+  }
+
+  sumResult = (val1 + val2) % modulusP;
+  multResult = (val1 * val2) % modulusP;
+
+  redraw();
+}
+
+function draw() {
+  background(220);
+
+  fill(0);
+  textSize(20);
+  text(`Módulo (p): ${modulusP}`, 600, 50);
+  text(`Número 1 (a): ${val1}`, 600, 80);
+  text(`Número 2 (b): ${val2}`, 600, 110);
+
+  fill(0, 150, 0);
+  textAlign(RIGHT, CENTER);
+  text(`Suma Modular (a + b) mod p: (${val1} + ${val2}) mod ${modulusP} = ${sumResult}`, 880, 160);
+  text(`Multiplicación Modular (a * b) mod p: (${val1} * ${val2}) mod ${modulusP} = ${multResult}`, 880, 190);
+  textAlign(LEFT, CENTER);
+  fill(0);
+
+  drawModularClock();
+
+  if (animating) {
+    let duration = 1800 / animationSpeed;
+    let pause = 350 / animationSpeed;
+    let elapsed = millis() - animationStart;
+    let progress = constrain(elapsed / duration, 0, 1);
+
+    let p1 = 0.33;
+    let p2 = p1 + (pause / duration);
+    let p3 = 0.66 + (pause / duration);
+
+    let p4 = 0.9 + (pause / duration);
+
+    // Limita p4 para que la rotación tenga tiempo
+    if (p4 > 0.9) p4 = 0.9;
+
+    if (animationType === "sum") {
+      animateSumPie(progress, p1, p2, p3, p4);
+    }
+
+    if (elapsed >= duration) {
+      animating = false;
+      noLoop();
+    }
+  }
+}
+
+function drawModularClock() {
+  let centerX = width / 2;
+  let centerY = height / 2 + 100;
+  let radius = 150;
+
+  stroke(0);
+  strokeWeight(2);
+  noFill();
+  ellipse(centerX, centerY, radius * 2, radius * 2);
+
+  textSize(16);
+  textAlign(CENTER, CENTER);
+  fill(0);
+
+  for (let i = 0; i < modulusP; i++) {
+    let angle = map(i, 0, modulusP, 0, TWO_PI) - HALF_PI;
+    let x = centerX + cos(angle) * (radius + 20);
+    let y = centerY + sin(angle) * (radius + 20);
+    text(i, x, y);
+
+    let xInner = centerX + cos(angle) * radius;
+    let yInner = centerY + sin(angle) * radius;
+    let xOuter = centerX + cos(angle) * (radius + 10);
+    let yOuter = centerY + sin(angle) * (radius + 10);
+    line(xInner, yInner, xOuter, yOuter);
+  }
+
+  highlightNumber(val1, centerX, centerY, radius, color(255, 0, 0));
+  highlightNumber(val2, centerX, centerY, radius, color(0, 0, 255));
+  highlightNumber(sumResult, centerX, centerY, radius, color(0, 150, 0));
+  highlightNumber(multResult, centerX, centerY, radius, color(200, 100, 0)); // Resaltar el resultado de la multiplicación modular
+
+  drawLineToNumber(val1, centerX, centerY, radius, color(255, 0, 0, 100));
+  drawLineToNumber(val2, centerX, centerY, radius, color(0, 0, 255, 100));
+  drawLineToNumber(sumResult, centerX, centerY, radius, color(0, 150, 0, 100));
+  drawLineToNumber(multResult, centerX, centerY, radius, color(200, 100, 0, 100)); // Línea para la multiplicación modular
+}
+
+function highlightNumber(num, centerX, centerY, radius, highlightColor) {
+  if (num >= 0 && num < modulusP) {
+    let angle = map(num, 0, modulusP, 0, TWO_PI) - HALF_PI;
+    let x = centerX + cos(angle) * radius;
+    let y = centerY + sin(angle) * radius;
+
+    fill(highlightColor);
+    noStroke();
+    ellipse(x, y, 20, 20);
+  }
+}
+
+function drawLineToNumber(num, centerX, centerY, radius, lineColor) {
+  if (num >= 0 && num < modulusP) {
+    let angle = map(num, 0, modulusP, 0, TWO_PI) - HALF_PI;
+    let x = centerX + cos(angle) * radius;
+    let y = centerY + sin(angle) * radius;
+
+    stroke(lineColor);
+    strokeWeight(3);
+    line(centerX, centerY, x, y);
+  }
+}
+
+function animateSumLine(progress) {
+  let centerX = width / 2;
+  let centerY = height / 2 + 100;
+  let radius = 150;
+
+  // Calcula los ángulos
+  let angleA = map(val1, 0, modulusP, 0, TWO_PI) - HALF_PI;
+  let angleB = map(val2, 0, modulusP, 0, TWO_PI) - HALF_PI;
+  let angleSum = map(sumResult, 0, modulusP, 0, TWO_PI) - HALF_PI;
+
+  // Punto de inicio (centro)
+  let x0 = centerX;
+  let y0 = centerY;
+
+  // Punto de val1
+  let x1 = centerX + cos(angleA) * radius;
+  let y1 = centerY + sin(angleA) * radius;
+
+  // Punto de sumResult
+  let x2 = centerX + cos(angleSum) * radius;
+  let y2 = centerY + sin(angleSum) * radius;
+
+  stroke(0, 150, 0);
+  strokeWeight(5);
+
+  if (progress < 0.5) {
+    // Animar desde centro a val1
+    let t = map(progress, 0, 0.5, 0, 1);
+    let xt = lerp(x0, x1, t);
+    let yt = lerp(y0, y1, t);
+    line(x0, y0, xt, yt);
+  } else {
+    // Animar desde val1 a sumResult
+    line(x0, y0, x1, y1);
+    let t = map(progress, 0.5, 1, 0, 1);
+    let xt = lerp(x1, x2, t);
+    let yt = lerp(y1, y2, t);
+    line(x1, y1, xt, yt);
+  }
+}
+
+function animateSumPie(progress, p1 = 0.33, p2 = 0.40, p3 = 0.60, p4 = 5.1) {
+  let centerX = width / 2;
+  let centerY = height / 2 + 100;
+  let radius = 150;
+
+  let firstVal = Math.min(val1, val2);
+  let secondVal = Math.max(val1, val2);
+  let firstColor = (val1 <= val2) ? color(255, 0, 0, 150) : color(0, 0, 255, 150);
+  let secondColor = (val1 > val2) ? color(255, 0, 0, 150) : color(0, 0, 255, 150);
+
+  let angleFirst = map(firstVal, 0, modulusP, 0, TWO_PI);
+  let angleSecond = map(secondVal, 0, modulusP, 0, TWO_PI);
+
+  // Paso 1: animar el pedazo menor
+  let sliceFirst = progress < p1 ? lerp(0, angleFirst, progress / p1) : angleFirst;
+  fill(firstColor);
+  noStroke();
+  arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, -HALF_PI + sliceFirst, PIE);
+
+  // Paso 2: pausa tras el primer pedazo
+  if (progress >= p1 && progress < p2) {
+    // Solo muestra el primer pedazo completo
+    return;
+  }
+
+  // Paso 3: animar el segundo pedazo
+  if (progress >= p2 && progress < p3) {
+    let t = (progress - p2) / (p3 - p2);
+    let sliceSecond = lerp(0, angleSecond, t);
+    fill(secondColor);
+    noStroke();
+    arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, -HALF_PI + sliceSecond, PIE);
+    return;
+  }
+
+  // Paso 4: pausa tras el segundo pedazo (antes de rotar)
+  if (progress >= p3 && progress < p4) {
+    fill(secondColor);
+    noStroke();
+    arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, -HALF_PI + angleSecond, PIE);
+    return;
+  }
+
+  // Paso 5: rotar el segundo pedazo
+  if (progress >= p4) {
+    let rotateAngle = lerp(0, angleFirst, (progress - p4) / (1 - p4));
+    fill(secondColor);
+    noStroke();
+    arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI + rotateAngle, -HALF_PI + rotateAngle + angleSecond, PIE);
+
+    // Resalta el punto final sumResult
+    let angleSum = map((val1 + val2) % modulusP, 0, modulusP, 0, TWO_PI) - HALF_PI;
+    let xSum = centerX + cos(angleSum) * radius;
+    let ySum = centerY + sin(angleSum) * radius;
+    fill(0, 150, 0);
+    ellipse(xSum, ySum, 24, 24);
+  }
+}
+
+noLoop();
+    </script>
+</body>
+</html>

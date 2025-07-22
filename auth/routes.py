@@ -95,3 +95,7 @@ def reto():
         except Exception:
             flash('Error al validar el reto. Intenta de nuevo.')
             return redirect(url_for('auth.reto'))
+
+@auth_bp.route('/p5')
+def p5():
+    return render_template('p5.html')
