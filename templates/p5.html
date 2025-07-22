@@ -84,26 +84,32 @@ function setup() {
   inputNum2.addClass('p5-input');
   yPos += 45;
 
-  let calculateButton = createButton('Calcular');
+  let calculateButton = createButton('Calcular suma');
   calculateButton.position(xPos, yPos);
-  calculateButton.mousePressed(triggerAnimation);
+  calculateButton.mousePressed(() => triggerAnimation("sum"));
+  yPos += 45;
+
+  let multButton = createButton('Calcular multiplicación');
+  multButton.position(xPos, yPos);
+  multButton.mousePressed(() => triggerAnimation("mult"));
+  yPos += 45;
 
   let speedSlider = createSlider(0.1, 2, 0.5, 0.01); // mínimo más bajo y valor inicial más lento
-  speedSlider.position(20, yPos + 70);
+  speedSlider.position(20, yPos + 50);
   speedSlider.style('width', '200px');
   speedSlider.input(() => {
     animationSpeed = speedSlider.value();
   });
-  createP('Velocidad de animación').position(20, yPos + 30).addClass('p5-label');
+  createP('Velocidad de animación').position(20, yPos + 10).addClass('p5-label');
 
   updateValues();
 }
 
-function triggerAnimation() {
+function triggerAnimation(type) {
   animating = true;
   animationStart = millis();
   animationProgress = 0;
-  animationType = "sum"; // Puedes cambiar a "mult" si quieres animar la multiplicación
+  animationType = type || "sum"; // "sum" o "mult"
   updateValues();
   loop();
 }
@@ -161,18 +167,7 @@ function updateValues() {
 function draw() {
   background(220);
 
-  fill(0);
-  textSize(20);
-  text(`Módulo (p): ${modulusP}`, 600, 50);
-  text(`Número 1 (a): ${val1}`, 600, 80);
-  text(`Número 2 (b): ${val2}`, 600, 110);
-
-  fill(0, 150, 0);
-  textAlign(RIGHT, CENTER);
-  text(`Suma Modular (a + b) mod p: (${val1} + ${val2}) mod ${modulusP} = ${sumResult}`, 880, 160);
-  text(`Multiplicación Modular (a * b) mod p: (${val1} * ${val2}) mod ${modulusP} = ${multResult}`, 880, 190);
-  textAlign(LEFT, CENTER);
-  fill(0);
+  
 
   drawModularClock();
 
@@ -185,14 +180,15 @@ function draw() {
     let p1 = 0.33;
     let p2 = p1 + (pause / duration);
     let p3 = 0.66 + (pause / duration);
-
     let p4 = 0.9 + (pause / duration);
-
-    // Limita p4 para que la rotación tenga tiempo
     if (p4 > 0.9) p4 = 0.9;
 
     if (animationType === "sum") {
       animateSumPie(progress, p1, p2, p3, p4);
+    }
+
+    if (animationType === "mult") {
+      animateMultPie(progress);
     }
 
     if (elapsed >= duration) {
@@ -200,6 +196,23 @@ function draw() {
       noLoop();
     }
   }
+
+
+
+  push(); // Guarda el estado actual de estilos
+  fill(0);
+  noStroke();
+  textSize(20);
+  textAlign(LEFT, CENTER);
+  text(`Módulo (p): ${modulusP}`, 600, 50);
+  text(`Número 1 (a): ${val1}`, 600, 80);
+  text(`Número 2 (b): ${val2}`, 600, 110);
+
+  fill(0, 150, 0);
+  textAlign(RIGHT, CENTER);
+  text(`Suma Modular (a + b) mod p: (${val1} + ${val2}) mod ${modulusP} = ${sumResult}`, 880, 160);
+  text(`Multiplicación Modular (a * b) mod p: (${val1} * ${val2}) mod ${modulusP} = ${multResult}`, 880, 190);
+  pop(); // Restaura el estado anterior de estilos
 }
 
 function drawModularClock() {
@@ -306,6 +319,7 @@ function animateSumLine(progress) {
 }
 
 function animateSumPie(progress, p1 = 0.33, p2 = 0.40, p3 = 0.60, p4 = 5.1) {
+  push();
   let centerX = width / 2;
   let centerY = height / 2 + 100;
   let radius = 150;
@@ -326,7 +340,7 @@ function animateSumPie(progress, p1 = 0.33, p2 = 0.40, p3 = 0.60, p4 = 5.1) {
 
   // Paso 2: pausa tras el primer pedazo
   if (progress >= p1 && progress < p2) {
-    // Solo muestra el primer pedazo completo
+    pop();
     return;
   }
 
@@ -337,6 +351,7 @@ function animateSumPie(progress, p1 = 0.33, p2 = 0.40, p3 = 0.60, p4 = 5.1) {
     fill(secondColor);
     noStroke();
     arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, -HALF_PI + sliceSecond, PIE);
+    pop();
     return;
   }
 
@@ -345,6 +360,7 @@ function animateSumPie(progress, p1 = 0.33, p2 = 0.40, p3 = 0.60, p4 = 5.1) {
     fill(secondColor);
     noStroke();
     arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, -HALF_PI + angleSecond, PIE);
+    pop();
     return;
   }
 
@@ -356,12 +372,67 @@ function animateSumPie(progress, p1 = 0.33, p2 = 0.40, p3 = 0.60, p4 = 5.1) {
     arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI + rotateAngle, -HALF_PI + rotateAngle + angleSecond, PIE);
 
     // Resalta el punto final sumResult
-    let angleSum = map((val1 + val2) % modulusP, 0, modulusP, 0, TWO_PI) - HALF_PI;
-    let xSum = centerX + cos(angleSum) * radius;
-    let ySum = centerY + sin(angleSum) * radius;
-    fill(0, 150, 0);
-    ellipse(xSum, ySum, 24, 24);
+      let angleSum = map((val1 + val2) % modulusP, 0, modulusP, 0, TWO_PI) - HALF_PI;
+      let xSum = centerX + cos(angleSum) * radius;
+      let ySum = centerY + sin(angleSum) * radius;
+      noFill();      // Sin relleno
+      stroke(0);     // Borde negro
+      strokeWeight(3);
+      ellipse(xSum, ySum, 24, 24);
   }
+  pop();
+}
+
+function animateMultPie(progress) {
+  push();
+  let centerX = width / 2;
+  let centerY = height / 2 + 100;
+  let radius = 150;
+
+  let totalSteps = val2;
+  let stepProgress = progress * totalSteps;
+  let currentStep = floor(stepProgress);
+  let partial = stepProgress - currentStep;
+
+  let angleA = map(val1, 0, modulusP, 0, TWO_PI);
+
+  // Dibuja las rebanadas completas
+  for (let i = 0; i < currentStep; i++) {
+    let startAngle = -HALF_PI + i * angleA;
+    let endAngle = startAngle + angleA;
+    fill(255, 140, 0, 150);
+    noStroke();
+    arc(centerX, centerY, radius * 2, radius * 2, startAngle, endAngle, PIE);
+  }
+
+  // Dibuja la rebanada parcial (la que se está animando)
+  let currentAngle = -HALF_PI + currentStep * angleA + angleA * partial;
+  if (currentStep < totalSteps) {
+    let startAngle = -HALF_PI + currentStep * angleA;
+    let endAngle = startAngle + angleA * partial;
+    fill(255, 140, 0, 150);
+    noStroke();
+    arc(centerX, centerY, radius * 2, radius * 2, startAngle, endAngle, PIE);
+
+    // Línea visible del avance actual
+    stroke(0); // negro, puedes cambiar a stroke(255) para blanco
+    strokeWeight(6);
+    let xLine = centerX + cos(endAngle) * radius;
+    let yLine = centerY + sin(endAngle) * radius;
+    line(centerX, centerY, xLine, yLine);
+  }
+
+  // Resalta el resultado final
+  if (progress >= 1) {
+    let angleResult = map(multResult, 0, modulusP, 0, TWO_PI) - HALF_PI;
+    let xRes = centerX + cos(angleResult) * radius;
+    let yRes = centerY + sin(angleResult) * radius;
+    noFill();      // Sin relleno
+    stroke(0);     // Borde negro
+    strokeWeight(3);
+    ellipse(xRes, yRes, 24, 24);
+  }
+  pop();
 }
 
 noLoop();
