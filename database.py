@@ -8,12 +8,13 @@ def connect_to_database(app):
     db_uri = os.environ.get('MYSQL_ADDON_URI')
     if not db_uri:
         # Si prefieres variables separadas
-        DB_USER = os.getenv('DB1_USER')
-        DB_PASSWORD = os.getenv('DB1_PASSWORD')
-        DB_HOST = os.getenv('DB1_HOST')
-        DB_NAME = os.getenv('DB1_NAME')
-        DB_PORT = os.getenv('DB1_PORT', '3306')
+        DB_USER = os.getenv('MYSQL_ADDON_USER')
+        DB_PASSWORD = os.getenv('MYSQL_ADDON_PASSWORD')
+        DB_HOST = os.getenv('MYSQL_ADDON_HOST')
+        DB_NAME = os.getenv('MYSQL_ADDON_DB')
+        DB_PORT = os.getenv('MYSQL_ADDON_PORT', '3306')
         db_uri = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+        print(" db uri: " + db_uri)
 
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

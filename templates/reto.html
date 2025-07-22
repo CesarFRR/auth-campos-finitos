@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Reto de campos finitos{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+  <div style="max-width: 400px; width: 100%; padding: 2em 2em 1.5em 2em; background: #23272a; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);">
+    <h2 style="text-align: center; margin-bottom: 1.2em;">Reto de campos finitos</h2>
+    <div style="background: #181a1b; color: #b3b3b3; border-radius: 6px; padding: 1em; margin-bottom: 1.2em; font-size: 0.98em;">
+      <strong>¿Cómo funciona?</strong><br>
+      Para acceder, debes resolver un reto matemático basado en <b>campos finitos</b> y <b>generadores</b>.<br>
+      <ul style="margin: 0.5em 0 0 1.2em; padding: 0;">
+        <li>Se te da un número primo <b>p</b> y un generador <b>g</b>.</li>
+        <li>Debes calcular <b>g<sup>k</sup> mod p</b> para un valor <b>k</b> dado.</li>
+        <li>Introduce el resultado correcto para continuar.</li>
+      </ul>
+      <span style="color: #4da3ff;">Este sistema es parte de un taller de criptografía y seguridad.</span>
+    </div>
+    <form method="post" style="display: flex; flex-direction: column; gap: 1em;">
+      <label>
+        PIN:
+        <input type="password" name="pin" required style="width: 100%; padding: 0.5em; border-radius: 4px; border: 1px solid #444; background: #181a1b; color: #f3f3f3; margin-top: 0.5em;">
+      </label>
+      <label>
+        <span style="color: #f3f3f3;">{{ question }}</span>
+        <input type="text" name="answer" required style="width: 100%; padding: 0.5em; border-radius: 4px; border: 1px solid #444; background: #181a1b; color: #f3f3f3; margin-top: 0.5em;">
+      </label>
+      <button type="submit" style="background: #4da3ff; color: #fff; border: none; padding: 0.7em; border-radius: 4px; font-weight: 500; cursor: pointer;">Enviar</button>
+    </form>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul style="margin-top: 1em; color: #ffb347;">
+          {% for m in messages %}
+            <li>{{ m }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </div>
+</div>
+{% endblock %} 
