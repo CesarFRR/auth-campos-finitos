@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Visualización Campo Finito - Cripto Login</title>
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+            <script>
+    const rotateStartSoundURL = "{{ url_for('static', filename='rotate_start.mp3') }}";
+    const rotateEndSoundURL = "{{ url_for('static', filename='rotate_end.mp3') }}";
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/addons/p5.sound.min.js"></script>
     <style>
         body {
             background: #181a1b;
@@ -30,7 +36,13 @@
         <h2 style="text-align:center; margin-top: 1em;">Visualización Interactiva de Campo Finito (Zp)</h2>
         <div id="sketch-holder"></div>
     </main>
+
+
     <script>
+
+
+let rotateStartSound;
+let rotateEndSound;
 // Variables para los elementos de entrada y valores
 let inputP, inputNum1, inputNum2;
 let modulusP = 7; // Valor inicial del módulo (p)
@@ -44,6 +56,43 @@ let animationProgress = 0; // 0 a 1
 let animationType = "sum"; // "sum" o "mult"
 let animationSpeed = 0.5; // 1.0 = normal, <1 más lento, >1 más rápido (valor inicial más lento)
 let preSumTime = 0; // Tiempo de preanimación para la suma
+let managedSounds = [];
+function preload() {
+  soundFormats('mp3');
+  
+  // Usamos las variables globales definidas en p5.html
+  rotateStartSound = loadSound(rotateStartSoundURL);
+  rotateEndSound = loadSound(rotateEndSoundURL);
+  managedSounds.push(rotateStartSound, rotateEndSound);
+}
+
+
+
+/**
+ * Reproduce un sonido de forma segura, evitando que se ejecute si
+ * otro sonido gestionado ya está sonando.
+ * @param {p5.SoundFile} sound - El objeto de sonido de p5.js que se quiere reproducir.
+ */
+function playSound(sound) {
+  // Primero, verificar que el sonido exista y esté cargado.
+  if (!sound || !sound.isLoaded()) {
+    console.log("El sonido aún no está listo.");
+    return;
+  }
+
+  // Segundo, recorrer la lista de sonidos gestionados.
+  for (let s of managedSounds) {
+    // Si algún sonido de la lista ya está sonando...
+    if (s.isPlaying()) {
+      // ...no hacer nada y salir de la función.
+      return;
+    }
+  }
+
+  // Si el bucle termina, significa que no hay sonidos en curso.
+  // Ahora sí, reproducir el sonido solicitado.
+  sound.play();
+}
 
 function setup() {
   let canvas = createCanvas(900, 600);
@@ -318,12 +367,13 @@ function animateSumLine(progress) {
   }
 }
 
-function animateSumPie(progress, p1 = 0.33, p2 = 0.40, p3 = 0.60, p4 = 5.1) {
+function animateSumPie(progress) {
   push();
   let centerX = width / 2;
   let centerY = height / 2 + 100;
   let radius = 150;
 
+  // --- Asignación de valores y colores ---
   let firstVal = Math.min(val1, val2);
   let secondVal = Math.max(val1, val2);
   let firstColor = (val1 <= val2) ? color(255, 0, 0, 150) : color(0, 0, 255, 150);
@@ -332,110 +382,137 @@ function animateSumPie(progress, p1 = 0.33, p2 = 0.40, p3 = 0.60, p4 = 5.1) {
   let angleFirst = map(firstVal, 0, modulusP, 0, TWO_PI);
   let angleSecond = map(secondVal, 0, modulusP, 0, TWO_PI);
 
-  // Paso 1: animar el pedazo menor
-  let sliceFirst = progress < p1 ? lerp(0, angleFirst, progress / p1) : angleFirst;
+  // --- Definición de las Fases de la Animación ---
+  const phase1_end = 0.30; // Termina la animación del primer arco
+  const phase2_end = 0.60; // Termina la animación del segundo arco
+  const pause_end = 0.80;  // Termina la pausa (dura un 20% del total)
+  const rotation_end = 1.0;  // Termina la rotación
+
+  // --- Cálculo de los valores animados basado en el progreso ---
+
+  // 1. Ángulo del primer arco
+  let currentAngleFirst = (progress < phase1_end) ? lerp(0, angleFirst, progress / phase1_end) : angleFirst;
+
+  // 2. Ángulo del segundo arco (solo se anima después de la fase 1)
+  let currentAngleSecond = 0;
+  if (progress > phase1_end) {
+    let t = (progress - phase1_end) / (phase2_end - phase1_end);
+    t = constrain(t, 0, 1); // Limita t entre 0 y 1
+    currentAngleSecond = lerp(0, angleSecond, t);
+  }
+  
+  // 3. Rotación (solo se anima después de la pausa)
+  let rotationAngle = 0;
+  if (progress > pause_end) {
+    playSound(rotateStartSound);
+    let t = (progress - pause_end) / (rotation_end - pause_end);
+    t = constrain(t, 0, 1);
+    rotationAngle = lerp(0, angleFirst, t);
+  }
+
+  // --- Dibujar los elementos en orden ---
+
+  // Siempre dibuja el primer arco (rojo)
   fill(firstColor);
   noStroke();
-  arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, -HALF_PI + sliceFirst, PIE);
-
-  // Paso 2: pausa tras el primer pedazo
-  if (progress >= p1 && progress < p2) {
-    pop();
-    return;
-  }
-
-  // Paso 3: animar el segundo pedazo
-  if (progress >= p2 && progress < p3) {
-    let t = (progress - p2) / (p3 - p2);
-    let sliceSecond = lerp(0, angleSecond, t);
+  arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, -HALF_PI + currentAngleFirst, PIE);
+  
+  // Dibuja el segundo arco (azul) encima, aplicando la rotación
+  if (currentAngleSecond > 0) {
     fill(secondColor);
     noStroke();
-    arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, -HALF_PI + sliceSecond, PIE);
-    pop();
-    return;
+    let startAngle = -HALF_PI + rotationAngle;
+    let endAngle = startAngle + currentAngleSecond;
+    arc(centerX, centerY, radius * 2, radius * 2, startAngle, endAngle, PIE);
   }
 
-  // Paso 4: pausa tras el segundo pedazo (antes de rotar)
-  if (progress >= p3 && progress < p4) {
-    fill(secondColor);
-    noStroke();
-    arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, -HALF_PI + angleSecond, PIE);
-    pop();
-    return;
+  // Resalta el punto final solo cuando la animación ha terminado
+  if (progress >= 1) {
+    rotateStartSound.stop(); // Detiene el sonido de inicio si estaba sonando
+    playSound(rotateEndSound);    
+    let angleSum = map((val1 + val2) % modulusP, 0, modulusP, 0, TWO_PI) - HALF_PI;
+    let xSum = centerX + cos(angleSum) * radius;
+    let ySum = centerY + sin(angleSum) * radius;
+    noFill();
+    stroke(0);
+    strokeWeight(3);
+    ellipse(xSum, ySum, 24, 24);
   }
 
-  // Paso 5: rotar el segundo pedazo
-  if (progress >= p4) {
-    let rotateAngle = lerp(0, angleFirst, (progress - p4) / (1 - p4));
-    fill(secondColor);
-    noStroke();
-    arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI + rotateAngle, -HALF_PI + rotateAngle + angleSecond, PIE);
-
-    // Resalta el punto final sumResult
-      let angleSum = map((val1 + val2) % modulusP, 0, modulusP, 0, TWO_PI) - HALF_PI;
-      let xSum = centerX + cos(angleSum) * radius;
-      let ySum = centerY + sin(angleSum) * radius;
-      noFill();      // Sin relleno
-      stroke(0);     // Borde negro
-      strokeWeight(3);
-      ellipse(xSum, ySum, 24, 24);
-  }
   pop();
 }
-
 function animateMultPie(progress) {
   push();
   let centerX = width / 2;
   let centerY = height / 2 + 100;
   let radius = 150;
 
-  let totalSteps = val2;
-  let stepProgress = progress * totalSteps;
-  let currentStep = floor(stepProgress);
-  let partial = stepProgress - currentStep;
+  let sliceVal = Math.min(val1, val2);
+  let rotVal = Math.max(val1, val2);
+  let angleSlice = map(sliceVal, 0, modulusP, 0, TWO_PI);
 
-  let angleA = map(val1, 0, modulusP, 0, TWO_PI);
+  // Definimos 3 fases: dibujar, pausar y rotar.
+  let drawPhaseEnd = 0.35;   // El dibujo termina en el 35%
+  let pausePhaseEnd = 0.55;  // La pausa termina en el 55% (dura un 20% del total)
+  let rotatePhaseEnd = 1.0;    // La rotación ocupa el resto
 
-  // Dibuja las rebanadas completas
-  for (let i = 0; i < currentStep; i++) {
-    let startAngle = -HALF_PI + i * angleA;
-    let endAngle = startAngle + angleA;
+  // Fase 1: Animar el trozo
+  if (progress < drawPhaseEnd) {
+    let t = progress / drawPhaseEnd; // Progreso dentro de esta fase (0 a 1)
+    let endAngle = lerp(-HALF_PI, -HALF_PI + angleSlice, t);
+    
+    fill(255, 140, 0, 150);
+    noStroke();
+    arc(centerX, centerY, radius * 2, radius * 2, -HALF_PI, endAngle, PIE);
+    
+  } 
+  // Fase 2: Pausa (dibuja el arco completo pero sin movimiento)
+  else if (progress < pausePhaseEnd) {
+    let startAngle = -HALF_PI;
+    let endAngle = startAngle + angleSlice;
+    
+    fill(255, 140, 0, 150);
+    noStroke();
+    arc(centerX, centerY, radius * 2, radius * 2, startAngle, endAngle, PIE);
+    
+  } 
+  // Fase 3: Rotar el trozo ya formado
+  else {
+    playSound(rotateStartSound);    
+    // Progreso dentro de esta fase (0 a 1)
+    let t = (progress - pausePhaseEnd) / (rotatePhaseEnd - pausePhaseEnd);
+    
+    // --- INICIO DE LA CORRECCIÓN ---
+    // Interpolamos el NÚMERO de la rotación, de la 1ª a la n-ésima (rotVal).
+    let currentRotationStep = lerp(1, rotVal, t);
+    
+    // La posición inicial del arco es el número de la rotación MENOS UNO,
+    // multiplicado por el tamaño del arco.
+    let startAngle = -HALF_PI + (currentRotationStep - 1) * angleSlice;
+    let endAngle = startAngle + angleSlice;
+    // --- FIN DE LA CORRECCIÓN ---
+    
     fill(255, 140, 0, 150);
     noStroke();
     arc(centerX, centerY, radius * 2, radius * 2, startAngle, endAngle, PIE);
   }
 
-  // Dibuja la rebanada parcial (la que se está animando)
-  let currentAngle = -HALF_PI + currentStep * angleA + angleA * partial;
-  if (currentStep < totalSteps) {
-    let startAngle = -HALF_PI + currentStep * angleA;
-    let endAngle = startAngle + angleA * partial;
-    fill(255, 140, 0, 150);
-    noStroke();
-    arc(centerX, centerY, radius * 2, radius * 2, startAngle, endAngle, PIE);
-
-    // Línea visible del avance actual
-    stroke(0); // negro, puedes cambiar a stroke(255) para blanco
-    strokeWeight(6);
-    let xLine = centerX + cos(endAngle) * radius;
-    let yLine = centerY + sin(endAngle) * radius;
-    line(centerX, centerY, xLine, yLine);
-  }
-
-  // Resalta el resultado final
+  // Resalta el resultado final cuando la animación completa termina
   if (progress >= 1) {
+    rotateStartSound.stop(); // Detiene el sonido de inicio si estaba sonando
+    playSound(rotateEndSound);
     let angleResult = map(multResult, 0, modulusP, 0, TWO_PI) - HALF_PI;
     let xRes = centerX + cos(angleResult) * radius;
     let yRes = centerY + sin(angleResult) * radius;
-    noFill();      // Sin relleno
-    stroke(0);     // Borde negro
+    
+    noFill();
+    stroke(0);
     strokeWeight(3);
     ellipse(xRes, yRes, 24, 24);
   }
+  
   pop();
 }
-
-noLoop();
     </script>
 </body>
 </html>
