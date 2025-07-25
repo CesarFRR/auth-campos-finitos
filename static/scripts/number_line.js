@@ -1,6 +1,10 @@
 import { state } from './config.js';
 
-// --- Parámetros de Dibujo de la Recta Numérica ---
+/**
+ * Calcula y devuelve los parámetros de dibujo para la recta numérica.
+ * Estos valores se ajustan dinámicamente al tamaño del lienzo y al módulo actual.
+ * @returns {{yPos: number, xOffset: number, stepPixelSize: number}} Un objeto con la posición vertical, el margen horizontal y el tamaño en píxeles de cada paso en la recta.
+ */
 function getLineParams() {
     // Posiciona la recta numérica debajo del reloj
     const yPos = height - 90; 
@@ -12,7 +16,8 @@ function getLineParams() {
 }
 
 /**
- * Dibuja la recta numérica estática.
+ * Dibuja la recta numérica estática, incluyendo la línea principal,
+ * las marcas verticales y los números correspondientes al módulo actual.
  */
 export function drawNumberLine() {
     const { yPos, xOffset, stepPixelSize } = getLineParams();
@@ -37,9 +42,10 @@ export function drawNumberLine() {
 }
 
 /**
- * Anima el punto en la recta numérica para la operación de SUMA.
- * Se sincroniza con el progreso de la animación del reloj.
- * @param {number} progress - El progreso de la animación (de 0 a 1).
+ * Anima el movimiento de un punto en la recta numérica para la operación de SUMA.
+ * El punto se desplaza suavemente desde 'a' hasta el resultado final ('a' + 'b').
+ * El movimiento está sincronizado con la fase de rotación de la animación del reloj.
+ * @param {number} progress - El progreso de la animación (un valor de 0.0 a 1.0).
  */
 export function animateSumOnLine(progress) {
     const { yPos, xOffset, stepPixelSize } = getLineParams();
@@ -72,9 +78,10 @@ export function animateSumOnLine(progress) {
 }
 
 /**
- * Anima el punto en la recta numérica para la operación de RESTA.
- * Se sincroniza con el progreso de la animación del reloj.
- * @param {number} progress - El progreso de la animación (de 0 a 1).
+ * Anima el movimiento de un punto en la recta numérica para la operación de RESTA.
+ * El punto se desplaza suavemente desde 'a' hasta el resultado final ('a' - 'b').
+ * El movimiento está sincronizado con la fase de rotación de la animación del reloj.
+ * @param {number} progress - El progreso de la animación (un valor de 0.0 a 1.0).
  */
 export function animateSubOnLine(progress) {
     const { yPos, xOffset, stepPixelSize } = getLineParams();
@@ -109,9 +116,10 @@ export function animateSubOnLine(progress) {
 }
 
 /**
- * Anima el punto en la recta numérica para la operación de MULTIPLICACIÓN.
- * Muestra saltos repetidos para visualizar la suma iterativa.
- * @param {number} progress - El progreso de la animación (de 0 a 1).
+ * Anima el movimiento de un punto en la recta numérica para la MULTIPLICACIÓN.
+ * La animación visualiza la operación como una serie de saltos. El punto realiza
+ * 'n' saltos de tamaño 'm', donde 'n' y 'm' son los dos números de la operación.
+ * @param {number} progress - El progreso de la animación (un valor de 0.0 a 1.0).
  */
 export function animateMultOnLine(progress) {
     const { yPos, xOffset, stepPixelSize } = getLineParams();
@@ -163,9 +171,11 @@ export function animateMultOnLine(progress) {
 }
 
 /**
- * Anima el punto en la recta numérica para la operación de DIVISIÓN.
- * Se divide en dos fases: encontrar el inverso y luego multiplicar.
- * @param {number} progress - El progreso de la animación (de 0 a 1).
+ * Anima el movimiento de un punto en la recta numérica para la DIVISIÓN.
+ * La animación se divide en dos fases para ilustrar el concepto de `a * b⁻¹`:
+ * 1. Demuestra que `b * b⁻¹ = 1` mediante una serie de saltos.
+ * 2. Realiza la multiplicación final `a * b⁻¹` mediante otra serie de saltos.
+ * @param {number} progress - El progreso de la animación (un valor de 0.0 a 1.0).
  */
 export function animateDivOnLine(progress) {
     if (state.divResult === null || state.bInverse === null) return;

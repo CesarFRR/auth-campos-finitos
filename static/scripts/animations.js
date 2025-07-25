@@ -7,6 +7,12 @@ import { playSound, rotateStartSound, rotateEndSound } from './sound_manager.js'
  * Calcula y devuelve los parámetros de dibujo del reloj (centro y radio).
  * AJUSTADO para un reloj más grande y centrado.
  */
+/**
+ * Calcula y devuelve los parámetros de dibujo del reloj (centro y radio).
+ * Estos valores son dinámicos y se ajustan al tamaño del lienzo para mantener
+ * la proporción y el centrado correctos.
+ * @returns {{centerX: number, centerY: number, radius: number}} Un objeto con las coordenadas del centro y el radio del reloj.
+ */
 function getClockParams() {
     return {
         centerX: width / 2,       // El centro horizontal sigue siendo el mismo.
@@ -15,6 +21,12 @@ function getClockParams() {
     };
 }
 
+/**
+ * Anima la operación de suma (a + b) en el reloj modular.
+ * Muestra los arcos de 'a' y 'b' y luego rota el segundo arco
+ * sobre el primero para visualizar la suma.
+ * @param {number} progress - El progreso de la animación (un valor de 0.0 a 1.0).
+ */
 export function animateSumPie(progress) {
     push();
     const { centerX, centerY, radius } = getClockParams(); // Usa los nuevos parámetros
@@ -95,6 +107,12 @@ export function animateSubPie(progress) {
     pop();
 }
 
+/**
+ * Anima la operación de multiplicación (a * b) en el reloj modular.
+ * Visualiza la multiplicación como una suma repetida, rotando un arco
+ * (el valor más pequeño) un número de veces (el valor más grande).
+ * @param {number} progress - El progreso de la animación (un valor de 0.0 a 1.0).
+ */
 export function animateMultPie(progress) {
     push();
     const { centerX, centerY, radius } = getClockParams(); // Usa los nuevos parámetros
@@ -129,6 +147,14 @@ export function animateMultPie(progress) {
     }
     pop();
 }
+/**
+ * Anima la operación de división (a / b), que se traduce en a * b⁻¹.
+ * La animación se divide en dos etapas principales:
+ * 1. Muestra los arcos de 'a' y el inverso de 'b' (b⁻¹).
+ * 2. Realiza la multiplicación visual de a * b⁻¹, rotando el arco de 'a'
+ * un número de veces igual al valor del inverso.
+ * @param {number} progress - El progreso de la animación (un valor de 0.0 a 1.0).
+ */
 export function animateDivPie(progress) {
     if (state.divResult === null || state.bInverse === null) return;
 

@@ -4,14 +4,48 @@ import { state } from './config.js';
 // Importamos las funciones del módulo principal que serán llamadas por los botones
 import { triggerAnimation, updateValues } from './main.js';
 
-// Exportamos las variables de los elementos para poder acceder a ellas si es necesario
-// (por ejemplo, para deshabilitarlos desde updateValues en main.js)
-export let inputP, inputNum1, inputNum2;
-export let calculateButton, multButton, subButton, divButton;
+/**
+ * Elemento de entrada (input) de p5.js para el módulo 'p' del campo finito.
+ * @type {p5.Element}
+ */
+export let inputP, 
+/**
+ * Elemento de entrada (input) de p5.js para el primer número 'a'.
+ * @type {p5.Element}
+ */
+inputNum1, 
+/**
+ * Elemento de entrada (input) de p5.js para el segundo número 'b'.
+ * @type {p5.Element}
+ */
+inputNum2;
 
 /**
- * Crea toda la interfaz de usuario (inputs, botones, sliders) y la posiciona en el canvas.
- * Debe ser llamada desde la función setup() principal.
+ * Botón de p5.js para iniciar la animación de la suma.
+ * @type {p5.Element}
+ */
+export let calculateButton, 
+/**
+ * Botón de p5.js para iniciar la animación de la multiplicación.
+ * @type {p5.Element}
+ */
+multButton, 
+/**
+ * Botón de p5.js para iniciar la animación de la resta.
+ * @type {p5.Element}
+ */
+subButton, 
+/**
+ * Botón de p5.js para iniciar la animación de la división.
+ * @type {p5.Element}
+ */
+divButton;
+
+/**
+ * Crea y posiciona todos los elementos de la interfaz de usuario (inputs, botones, slider) en el lienzo.
+ * Asigna los listeners de eventos correspondientes (`.input()` y `.mousePressed()`) que llaman
+ * a las funciones del módulo principal (`updateValues` y `triggerAnimation`).
+ * Esta función debe ser llamada una sola vez desde la función `setup()` principal.
  */
 export function createUI() {
     let yPos = 20, xPos = 20;

@@ -1,8 +1,26 @@
+"""
+ Importa las dependencias necesarias.
+ - `SQLAlchemy`: El Object-Relational Mapper (ORM) que facilita la interacción con la base de datos.
+ - `os`: Para acceder a las variables de entorno donde se almacenan las credenciales de la base de datos.
+ """
 from flask_sqlalchemy import SQLAlchemy
 import os
 
+"""
+ Crea una instancia global del objeto SQLAlchemy.
+ Esta instancia 'db' se asociará con la aplicación Flask más adelante
+ y se usará en todo el proyecto para definir modelos y ejecutar consultas.
+ @type {SQLAlchemy}
+ """
 db = SQLAlchemy()
 
+"""
+ Configura y establece la conexión con la base de datos para la aplicación Flask.
+ Esta función lee las credenciales de la base de datos desde las variables de entorno,
+ construye la URI de conexión, inicializa la instancia 'db' con la aplicación,
+ y finalmente intenta crear todas las tablas definidas en los modelos.
+ @param {Flask} app - La instancia de la aplicación Flask a la que se conectará la base de datos.
+ """
 def connect_to_database(app):
     # Puedes usar variables de entorno personalizadas o la URI completa
     db_uri = os.environ.get('MYSQL_ADDON_URI')

@@ -3,8 +3,11 @@
 import { state } from './config.js';
 
 /**
- * Dibuja el reloj modular completo, incluyendo el círculo, los números y los resaltados.
- * AHORA CON UN TAMAÑO MAYOR Y MEJOR CENTRADO.
+ * Dibuja el reloj modular completo en el canvas.
+ * Esto incluye el círculo principal, las marcas numéricas alrededor,
+ * los resaltados de colores en los números relevantes (a, b, resultados)
+ * y las líneas desde el centro hasta dichos números.
+ * Su tamaño y posición se ajustan dinámicamente según el tamaño del lienzo.
  */
 export function drawModularClock() {
     // --- PARÁMETROS AJUSTADOS ---
@@ -50,7 +53,12 @@ export function drawModularClock() {
 }
 
 /**
- * Dibuja un círculo resaltado en un número específico del reloj.
+ * Dibuja un círculo de color para resaltar un número específico en la circunferencia del reloj.
+ * @param {number} num - El número a resaltar.
+ * @param {number} centerX - La coordenada X del centro del reloj.
+ * @param {number} centerY - La coordenada Y del centro del reloj.
+ * @param {number} radius - El radio del reloj.
+ * @param {p5.Color} highlightColor - El color del círculo de resaltado.
  */
 function highlightNumber(num, centerX, centerY, radius, highlightColor) {
     if (num >= 0 && num < state.modulusP) {
@@ -64,7 +72,12 @@ function highlightNumber(num, centerX, centerY, radius, highlightColor) {
 }
 
 /**
- * Dibuja una línea desde el centro del reloj hasta un número.
+ * Dibuja una línea semitransparente desde el centro del reloj hasta un número específico.
+ * @param {number} num - El número al que apuntará la línea.
+ * @param {number} centerX - La coordenada X del centro del reloj.
+ * @param {number} centerY - La coordenada Y del centro del reloj.
+ * @param {number} radius - El radio del reloj.
+ * @param {p5.Color} lineColor - El color de la línea.
  */
 function drawLineToNumber(num, centerX, centerY, radius, lineColor) {
     if (num >= 0 && num < state.modulusP) {
@@ -78,7 +91,9 @@ function drawLineToNumber(num, centerX, centerY, radius, lineColor) {
 }
 
 /**
- * Muestra el texto con los datos de entrada a la izquierda y los resultados a la derecha.
+ * Muestra el texto informativo en el canvas.
+ * Dibuja dos columnas: a la izquierda, los datos de entrada (módulo, a, b),
+ * y a la derecha, los resultados calculados para cada operación (suma, resta, etc.).
  */
 export function drawResultsText() {
     push();

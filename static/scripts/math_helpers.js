@@ -3,8 +3,11 @@
 import { primeSet, maxPrecomputedPrime } from './config.js';
 
 /**
- * Calcula el inverso multiplicativo de 'a' módulo 'm'.
- * Devuelve null si no existe.
+ * Calcula el inverso multiplicativo de 'a' en el campo finito Zm.
+ * Utiliza el Algoritmo de Euclides Extendido para encontrar el inverso.
+ * @param {number} a - El número del cual se quiere encontrar el inverso.
+ * @param {number} m - El módulo del campo finito.
+ * @returns {number|null} El inverso multiplicativo de 'a' mod 'm', o null si no existe (si 'a' y 'm' no son coprimos).
  */
 export function modInverse(a, m) {
     // El inverso solo existe si a y m son coprimos.
@@ -15,7 +18,10 @@ export function modInverse(a, m) {
 }
 
 /**
- * Algoritmo de Euclides para encontrar el máximo común divisor.
+ * Calcula el Máximo Común Divisor (MCD) de dos números utilizando el Algoritmo de Euclides.
+ * @param {number} a - El primer número.
+ * @param {number} b - El segundo número.
+ * @returns {number} El MCD de a y b.
  */
 export function gcd(a, b) {
     while (b !== 0) {
@@ -25,7 +31,11 @@ export function gcd(a, b) {
 }
 
 /**
- * Algoritmo de Euclides Extendido.
+ * Implementa el Algoritmo de Euclides Extendido para encontrar los coeficientes de Bézout.
+ * Es una función auxiliar utilizada principalmente por `modInverse`.
+ * @param {number} a - El primer número.
+ * @param {number} b - El segundo número.
+ * @returns {Array<number>} Un array `[x, y]` tal que `ax + by = gcd(a, b)`.
  */
 export function extendedGCD(a, b) {
     if (a === 0) return [0, 1];
@@ -36,7 +46,11 @@ export function extendedGCD(a, b) {
 }
 
 /**
- * Comprueba si un número es primo usando un set precalculado para mayor velocidad.
+ * Comprueba de forma eficiente si un número es primo.
+ * Primero, busca el número en un Set precalculado para una respuesta instantánea.
+ * Si el número es mayor que los precalculados, utiliza un algoritmo de primalidad estándar.
+ * @param {number} num - El número a comprobar.
+ * @returns {boolean} `true` si el número es primo, `false` en caso contrario.
  */
 export function fastIsPrime(num) {
     if (num <= maxPrecomputedPrime) return primeSet.has(num);
@@ -44,7 +58,10 @@ export function fastIsPrime(num) {
 }
 
 /**
- * Comprueba si un número es primo (algoritmo estándar).
+ * Comprueba si un número es primo utilizando un algoritmo de prueba por división optimizado.
+ * Es la función de respaldo para `fastIsPrime` cuando el número es grande.
+ * @param {number} num - El número a comprobar.
+ * @returns {boolean} `true` si el número es primo, `false` en caso contrario.
  */
 function isPrime(num) {
     if (num <= 1) return false;

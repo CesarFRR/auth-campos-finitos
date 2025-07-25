@@ -12,11 +12,22 @@ import { drawNumberLine, animateSumOnLine, animateSubOnLine, animateMultOnLine, 
 // --- 2. FUNCIONES GLOBALES DE P5.JS ---
 // Asignamos las funciones al objeto 'window' para que p5.js las encuentre.
 
+/**
+ * Función de p5.js que se ejecuta una sola vez antes de `setup`.
+ * Se utiliza para precargar recursos como sonidos o imágenes.
+ * Delega la carga de sonidos al módulo `sound_manager`.
+ */
 window.preload = function () {
     // Delega la carga de sonidos al módulo correspondiente.
     preloadSounds();
 };
 
+/**
+ * Función de p5.js que se ejecuta una sola vez al iniciar el sketch.
+ * Configura el entorno inicial, como el tamaño del lienzo de forma adaptable,
+ * y delega la creación de la interfaz de usuario al módulo `dom_elements`.
+ * Finalmente, llama a `updateValues` para realizar los cálculos iniciales y dibujar el primer fotograma.
+ */
 window.setup = function () {
     // Declaramos una variable para el lienzo
     let canvas;
@@ -45,7 +56,12 @@ window.setup = function () {
     updateValues();
 };
 
-// --- 3. DRAW ---
+/**
+ * Función de p5.js que se ejecuta en un bucle continuo (controlado por `loop()` y `noLoop()`).
+ * Es el corazón de la animación. En cada fotograma, limpia el fondo, dibuja los
+ * componentes estáticos (reloj, textos, recta numérica) y, si una animación está activa,
+ * calcula el progreso y llama a las funciones de animación correspondientes para el reloj y la recta.
+ */
 window.draw = function () {
     background(220);
 
@@ -94,7 +110,9 @@ window.draw = function () {
 // --- 3. LÓGICA PRINCIPAL Y MANEJO DE ESTADO ---
 
 /**
- * Inicia una animación. Esta función es llamada por los botones en dom_elements.js.
+ * Inicia una animación. Esta función es llamada por los listeners de los botones de operación.
+ * Establece el estado de la aplicación a "animando", registra el tiempo de inicio,
+ * y activa el bucle `draw()` de p5.js para que comience la animación.
  * @param {string} type - El tipo de animación a ejecutar ("sum", "sub", "mult", "div").
  */
 export function triggerAnimation(type) {
@@ -108,8 +126,11 @@ export function triggerAnimation(type) {
 }
 
 /**
- * Actualiza todos los valores y cálculos basados en los inputs del usuario.
- * Es llamada por los listeners de los inputs en dom_elements.js.
+ * Lee los valores actuales de los inputs, valida que sean correctos (ej. que 'p' sea primo),
+ * y realiza todos los cálculos de las operaciones modulares (suma, resta, etc.).
+ * Actualiza el objeto `state` global con los nuevos resultados y habilita o deshabilita
+ * los botones según sea necesario. Finalmente, llama a `redraw()` para actualizar la
+ * visualización si no hay una animación en curso.
  */
 export function updateValues() {
     // --- Validación del Módulo P ---

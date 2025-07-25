@@ -4,10 +4,23 @@ from database import db
 from utils.finite_field_challenge import generate_finite_field_challenge
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# Blueprint de autenticación
+"""
+ Un Blueprint en Flask que agrupa las rutas relacionadas con la autenticación.
+ Permite organizar la aplicación de forma modular.
+ @type {Blueprint}
+ """
 auth_bp = Blueprint('auth', __name__)
 
 # --- Rutas ---
+"""
+ Gestiona el registro de nuevos usuarios.
+ - Método GET: Muestra el formulario de registro.
+ - Método POST: Procesa los datos del formulario (email, contraseña, PIN).
+ Valida que los campos no estén vacíos, genera hashes seguros para la
+ contraseña y el PIN, crea un nuevo objeto `User` y lo guarda en la
+ base de datos. Redirige al login si el registro es exitoso, o muestra
+ un mensaje de error si el correo ya existe o falla la validación.
+ """
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -33,6 +46,15 @@ def register():
             return redirect(url_for('auth.register'))
     return render_template('register.html')
 
+"""
+ Gestiona el inicio de sesión de los usuarios.
+ - Método GET: Muestra el formulario de login.
+ - Método POST: Procesa el email y la contraseña. Busca al usuario en la
+ base de datos y verifica que el hash de la contraseña coincida.
+ Si las credenciales son correctas, guarda el ID y el email del usuario
+ en la sesión y lo redirige al desafío del PIN. En caso contrario,
+ muestra un mensaje de error.
+ """
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -50,12 +72,23 @@ def login():
             return redirect(url_for('auth.login'))
     return render_template('login.html')
 
+"""
+ Cierra la sesión del usuario actual.
+ Limpia todas las variables de la sesión y redirige al usuario a la
+ página de inicio de sesión con un mensaje de confirmación.
+ """
 @auth_bp.route('/logout')
 def logout():
     session.clear()
     flash('Sesión cerrada')
     return redirect(url_for('auth.login'))
 
+"""
+ Muestra el panel de control principal del usuario.
+ Primero, verifica si el usuario ha iniciado sesión comprobando la existencia
+ de 'user_id' en la sesión. Si no ha iniciado sesión, lo redirige al login.
+ Si está autenticado, renderiza la plantilla del dashboard.
+ """
 @auth_bp.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -63,6 +96,16 @@ def dashboard():
         return redirect(url_for('auth.login'))
     return render_template('dashboard.html', email=session['email'])
 
+"""
+ Gestiona el desafío criptográfico de segundo factor (PIN).
+ - Método GET: Genera un nuevo desafío de campo finito (p, g, pregunta),
+ lo guarda en la sesión y muestra la página del reto al usuario.
+ - Método POST: Procesa el PIN y la respuesta del usuario. Verifica que el PIN
+ sea correcto comparando su hash con el almacenado en la base de datos.
+ Luego, calcula la solución correcta del desafío matemático (g^PIN mod p) y
+ la compara con la respuesta del usuario. Redirige al dashboard si es
+correcta, o muestra un mensaje de error si falla alguna de las validaciones.
+ """
 @auth_bp.route('/reto', methods=['GET', 'POST'])
 def reto():
     if request.method == 'GET':
@@ -96,6 +139,10 @@ def reto():
             flash('Error al validar el reto. Intenta de nuevo.')
             return redirect(url_for('auth.reto'))
 
+"""
+ Renderiza la página que contiene la visualización interactiva de p5.js.
+ Simplemente muestra la plantilla 'p5.html'.
+ """
 @auth_bp.route('/p5')
 def p5():
     return render_template('p5.html')
